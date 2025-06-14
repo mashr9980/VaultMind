@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     
     # Server settings
     HOST: str = "0.0.0.0"
-    PORT: int = 7201
+    PORT: int = 9201
     
     # Hardware-optimized settings
     WORKERS: int = 1
