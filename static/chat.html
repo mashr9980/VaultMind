@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>VaultMind Expert Chat</title>
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="/static/css/chat.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9IiM2NjdlZWEiLz4KPHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHg9IjYiIHk9IjYiIGZpbGw9IndoaXRlIj4KPHA+QzwvcD4KPC9zdmc+Cjwvc3ZnPg==">
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-sidebar">
+            <div class="sidebar-header">
+                <div class="nav-brand">
+                    <i class="fas fa-robot"></i>
+                    <span>VaultMind Chat</span>
+                </div>
+                <button class="btn btn-small btn-primary" onclick="newChat()">
+                    <i class="fas fa-plus"></i> New Chat
+                </button>
+            </div>
+
+            <div class="knowledge-base-info">
+                <div class="kb-info-card">
+                    <i class="fas fa-database"></i>
+                    <div class="kb-info-content">
+                        <h4>VaultMind Knowledge Base</h4>
+                        <p>Specialized support for VaultMind ERP systems with expert guidance and documentation</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-sessions">
+                <h3><i class="fas fa-history"></i> Chat History</h3>
+                <div id="sessions-list" class="sessions-list">
+                    <div style="text-align: center; padding: 2rem; color: #666;">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
+                        <p>Loading sessions...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <a href="/app" class="btn btn-outline btn-small">
+                    <i class="fas fa-home"></i> Dashboard
+                </a>
+                <button class="btn btn-outline btn-small" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+
+        <div class="chat-main">
+            <div class="chat-header">
+                <div class="chat-info">
+                    <h3 id="chat-title">VaultMind Expert Assistant</h3>
+                    <p id="chat-status">Connecting to knowledge base...</p>
+                </div>
+                <div class="chat-actions">
+                    <button class="btn btn-small btn-secondary" onclick="clearChat()" id="clear-btn" disabled>
+                        <i class="fas fa-trash"></i> Clear
+                    </button>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chat-messages">
+                <div class="welcome-message">
+                    <div class="assistant-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        <p>Hello! I'm VaultMind Expert Assistant, your specialized support for VaultMind ERP systems. I'm ready to help you with configuration, troubleshooting, and best practices.</p>
+                        <p><strong>How I can assist you:</strong></p>
+                        <ul>
+                            <li>VaultMind configuration guidance and setup</li>
+                            <li>Technical troubleshooting and issue resolution</li>
+                            <li>Best practices and recommendations</li>
+                            <li>System optimization and performance tips</li>
+                            <li>Security and permissions guidance</li>
+                        </ul>
+                        <p><em>Please ask me anything related to VaultMind systems!</em></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-container">
+                <div class="chat-input-wrapper">
+                    <textarea 
+                        id="chat-input" 
+                        placeholder="Connecting to knowledge base..." 
+                        disabled
+                        onkeypress="handleKeyPress(event)"
+                        rows="1"
+                    ></textarea>
+                    <button 
+                        id="send-btn" 
+                        class="send-btn" 
+                        onclick="sendMessage()" 
+                        disabled
+                        title="Send Message"
+                    >
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <p class="input-hint">
+                    <i class="fas fa-keyboard"></i> Press Enter to send, Shift+Enter for new line
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div id="connection-status" class="connection-status disconnected">
+        <i class="fas fa-circle"></i>
+        <span>Disconnected</span>
+    </div>
+
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <h3>Loading Chat...</h3>
+            <p>Please wait while we initialize your chat interface</p>
+        </div>
+    </div>
+
+    <div id="alert-container" class="alert-container"></div>
+
+    <script src="/static/js/main.js"></script>
+    <script src="/static/js/chat.js"></script>
+    
+    <script>
+        console.log('Chat Interface initialized');
+        
+        window.addEventListener('error', function(e) {
+            console.error('JavaScript Error:', e.error);
+            if (typeof showAlert === 'function') {
+                showAlert('An error occurred in the chat interface. Please refresh the page.', 'error');
+            }
+        });
+        
+        console.log('Chat Interface URL:', window.location.href);
+        console.log('API Base URL:', window.location.origin);
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatInput = document.getElementById('chat-input');
+            if (chatInput) {
+                chatInput.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+                });
+            }
+        });
+        
+        const knowledgeBaseStyles = `
+            .knowledge-base-info {
+                padding: 1rem 1.5rem;
+                border-bottom: 2px solid #e1e8ed;
+            }
+            
+            .kb-info-card {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                padding: 1rem;
+                background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+                border-radius: 10px;
+                border: 1px solid rgba(102, 126, 234, 0.2);
+            }
+            
+            .kb-info-card i {
+                font-size: 2rem;
+                color: #667eea;
+                min-width: 2rem;
+            }
+            
+            .kb-info-content h4 {
+                color: #333;
+                margin: 0 0 0.25rem 0;
+                font-size: 1rem;
+            }
+            
+            .kb-info-content p {
+                color: #666;
+                margin: 0;
+                font-size: 0.85rem;
+                line-height: 1.4;
+            }
+            
+            .document-selector {
+                display: none !important;
+            }
+            
+            .connection-status {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 0.5rem 1rem;
+                border-radius: 20px;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                font-size: 0.9rem;
+                z-index: 1000;
+                transition: all 0.3s ease;
+            }
+            
+            .connection-status.connected {
+                background: rgba(40, 167, 69, 0.9);
+            }
+            
+            .connection-status.disconnected {
+                background: rgba(220, 53, 69, 0.9);
+            }
+            
+            .connection-status.connecting {
+                background: rgba(255, 193, 7, 0.9);
+                color: #212529;
+            }
+            
+            .connection-status i {
+                font-size: 0.8rem;
+                animation: pulse 2s infinite;
+            }
+            
+            .connection-status.connected i {
+                animation: none;
+            }
+            
+            @keyframes pulse {
+                0% { opacity: 1; }
+                50% { opacity: 0.5; }
+                100% { opacity: 1; }
+            }
+            
+            #chat-input {
+                resize: none;
+                overflow-y: auto;
+                min-height: 40px;
+                max-height: 120px;
+                line-height: 1.4;
+            }
+            
+            .chat-input-wrapper {
+                position: relative;
+            }
+            
+            .loading-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.8);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+                z-index: 9999;
+                color: white;
+                text-align: center;
+            }
+            
+            .loading-overlay.active {
+                display: flex;
+            }
+            
+            .spinner {
+                width: 40px;
+                height: 40px;
+                border: 4px solid rgba(255, 255, 255, 0.3);
+                border-top: 4px solid white;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin: 0 auto 1rem;
+            }
+            
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        `;
+        
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = knowledgeBaseStyles;
+        document.head.appendChild(styleSheet);
+    </script>
+</body>
+</html>
